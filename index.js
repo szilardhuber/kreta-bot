@@ -1,6 +1,6 @@
 const querystring = require('querystring');
 const fs = require('fs');
-const { login, getMarks, getMarksDetails, chooseRole } = require('./api');
+const { login, getUserId, getMarks, getMarksDetails, chooseRole } = require('./api');
 
 let creds = null;
 try {
@@ -16,19 +16,20 @@ try {
     process.exit(1);
 }
 
-let authCookie = null;
 login(creds.userName, creds.password)
-    .then( (cookie) => {
-        return chooseRole(cookie);
+    .then( () => {
+        return chooseRole();
     })
     .then( (cookie) => {
-        authCookie = cookie
-        return getMarks(authCookie);
+        return getUserId()
+    })
+    .then( (userId) => {
+        console.log("UserID is: ", userId);
+        return getMarks(userId);
     })
     .then( (subjects) => {
-        console.log("OK ");
         subjects.map( subject => {
-            getMarksDetails(authCookie, subject.TanuloId, subject.ID)
+            getMarksDetails(subject.TanuloId, subject.ID)
                 .then( (marks) => {
                     marks.map( mark => {
                         console.log(mark.ErtekelesDatuma, subject.Nev, mark.Ertekelo, mark.ErtekelesSzoveg);
