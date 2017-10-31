@@ -1,41 +1,39 @@
-const querystring = require('querystring');
-const fs = require('fs');
 const { login, getUserId, getMarks, getMarksDetails, chooseRole } = require('./api');
 
-let creds = null;
-try {
-    creds = JSON.parse(fs.readFileSync("config.json"));
-} catch (err) {
-    console.log("You need a file named config.json containing userName and password");
-    console.log(`
-        {
-            "userName": "<your-username>",
-                "password": "<your-password>"
-        }
-        `);
-    process.exit(1);
-}
-
-login(creds.userName, creds.password)
-    .then( () => {
-        return chooseRole();
-    })
-    .then( (cookie) => {
-        return getUserId()
-    })
-    .then( (userId) => {
-        console.log("UserID is: ", userId);
-        return getMarks(userId);
-    })
-    .then( (subjects) => {
-        subjects.map( subject => {
-            getMarksDetails(subject.TanuloId, subject.ID)
-                .then( (marks) => {
-                    marks.map( mark => {
-                        console.log(mark.ErtekelesDatuma, subject.Nev, mark.Ertekelo, mark.ErtekelesSzoveg);
+exports.handler = (event, context, callback) => {
+    let userName, password = null;
+    try {
+        userName = event["queryStringParameters"]['userName'];
+        password = event["queryStringParameters"]['password'];
+    } catch (err) {
+        return callback(new Error("userName and password must be defined"), null);
+    }
+    if (!userName || !password) {
+        return callback(new Error("userName and password must be defined in event"), null);
+    }
+    login(userName, password)
+        .then( () => {
+            return chooseRole();
+        })
+        .then( (cookie) => {
+            return getUserId()
+        })
+        .then( (userId) => {
+            return getMarks(userId);
+        })
+        .then( (subjects) => {
+            const output = subjects.map( subject => {
+                return getMarksDetails(subject.TanuloId, subject.ID)
+                    .then( (marks) => {
+                        return marks.map( mark => {
+                            return `${subject.ID}, ${mark.ErtekelesDatuma}, ${subject.Nev}, ${mark.Ertekelo}, ${mark.ErtekelesSzoveg}`
+                        })
                     })
-                })
-        });
-    }).catch( (err) => {
-        console.error("Error while logging in: ", err);
-    })
+            });
+            Promise.all(output).then( values => {
+                callback(null, { statusCode: 200, body: JSON.stringify(values)});
+            })
+        }).catch( (err) => {
+            callback(err, null);
+        })
+};

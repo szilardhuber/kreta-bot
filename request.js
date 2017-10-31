@@ -1,9 +1,7 @@
-// const https = require('https');
 const request = require('request');
 
+const hostname = 'https://klik029643001.e-kreta.hu';
 const globalRequestOptions = {
-    hostname: 'https://klik029643001.e-kreta.hu',
-    port: 443,
     headers: {
         'Content-Type': 'application/json; charset=UTF-8',
     },
@@ -12,14 +10,17 @@ const globalRequestOptions = {
 
 const makeRequest = (path, method, data) => {
     return new Promise( (resolve, reject) => {
-        console.log("Making request to: ", path, "\n");
         let options = globalRequestOptions;
-        options.uri = globalRequestOptions.hostname + path;
+        options.uri = hostname + path;
         options.method = method;
         if (data) {
             options.body = data;
         }
         const req = request(options, (err, res, body) => {
+            if (err) {
+                return reject(err);
+            }
+
             if (res.statusCode != 200 && res.statusCode != 302) {
                 return reject(res.statusCode);
             }

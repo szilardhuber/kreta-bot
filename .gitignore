@@ -59,3 +59,7 @@ typings/
 
 # config file
 config.json
+
+# AWS terraform
+*.zip
+*.tfstate*
