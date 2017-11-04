@@ -19,7 +19,8 @@ const login = (userName, password) => {
 }
 
 const getMarks = (userId) => {
-    const path = `/api/ErtekelesekTanuloApi/GetErtekelesekGrid?sort=&page=1&pageSize=100&group=&filter=&data=%7B%22tanuloId%22%3A%22${userId}%22%7D`;
+    //const path = `/api/ErtekelesekTanuloApi/GetErtekelesekGrid?sort=&page=1&pageSize=100&group=&filter=&data=%7B%22tanuloId%22%3A%22${userId}%22%7D`;
+    const path = `/api/ErtekelesekTanuloApi/GetTanuloErtekelesekGrid?sort=&page=1&pageSize=100&group=&filter=&data=%7B%7D&`
     const method = 'GET';
     return makeRequest( path, method, null)
         .then( (body) => {
@@ -44,27 +45,15 @@ const chooseRole = () => {
         });
 }
 
-const getMarksDetails = (pupilId, subjectId) => {
-    const path = `//api/ErtekelesekTanuloApi/GetErtekelesReszletekGrid?TanuloId=${pupilId}&TantargyId=${subjectId}&sort=&page=1&pageSize=100&data=%7B%7D`;
+const getMarksDetails = (subject) => {
+    const pupilId = subject.TanuloId;
+    const subjectId = subject.ID;
+    const path = `/api/ErtekelesekTanuloApi/GetTanuloErtekelesReszletekGrid?TanuloId=${pupilId}&TantargyId=${subjectId}&sort=&page=1&pageSize=100&data=%7B%7D`;
     const method = 'GET';
-    return makeRequest( path, method, null)
+    return makeRequest( path, method, JSON.stringify(subject))
         .then( (body) => {
             const data = JSON.parse(body.toString());
             return data.Data;
-        })
-}
-
-const  getUserId = () => {
-    const path = `/Intezmeny/Faliujsag`;
-    const method = 'GET';
-    const userIdRegexp = /.*felhasznaloID:(\d+) ,.*/
-    return makeRequest( path, method, null)
-        .then( (body) => {
-            const match = userIdRegexp.exec(body);
-            if (!match || match.length < 2) {
-                throw new Error("Could not find UserID in response");
-            }
-            return match[1];
         })
 }
 
@@ -73,5 +62,4 @@ module.exports = {
     getMarks,
     chooseRole,
     getMarksDetails,
-    getUserId,
 }
