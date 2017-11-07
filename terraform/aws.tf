@@ -95,6 +95,29 @@ resource "aws_iam_role" "iam_for_lambda" {
 EOF
 }
 
+resource "aws_iam_policy" "policy" {
+    name        = "dynamodb-policy"
+    description = "Dynamodb Policy"
+    policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DynamodbFullAcccess",
+      "Effect": "Allow",
+      "Action": "dynamodb:*",
+      "Resource": "arn:aws:dynamodb:*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_dynamo_attach" {
+    role       = "${aws_iam_role.iam_for_lambda.name}"
+    policy_arn = "${aws_iam_policy.policy.arn}"
+}
+
 resource "aws_lambda_function" "ekreta" {
   filename         = "ekreta.zip"
   function_name    = "ekreta"
@@ -109,4 +132,24 @@ resource "aws_lambda_function" "ekreta" {
       foo = "bar"
     }
   }
+}
+
+resource "aws_cloudwatch_event_rule" "every_thirty_minutes" {
+    name = "every-thirty-minutes"
+    description = "Fires every thirty minutes"
+    schedule_expression = "rate(30 minutes)"
+}
+
+resource "aws_cloudwatch_event_target" "ekreta_every_thirty_minutes" {
+    rule = "${aws_cloudwatch_event_rule.every_thirty_minutes.name}"
+    target_id = "ekreta"
+    arn = "${aws_lambda_function.ekreta.arn}"
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_ekreta" {
+    statement_id = "AllowExecutionFromCloudWatch"
+    action = "lambda:InvokeFunction"
+    function_name = "${aws_lambda_function.ekreta.function_name}"
+    principal = "events.amazonaws.com"
+    source_arn = "${aws_cloudwatch_event_rule.every_thirty_minutes.arn}"
 }
