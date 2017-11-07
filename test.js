@@ -15,7 +15,6 @@ getMarks({}, null, (err, message) => {
         const response = JSON.parse(message.body);
         response.map( mark => {
             console.log(mark);
-            //console.log(mark.ErtekelesDatuma, subject.Nev, mark.Ertekelo, mark.ErtekelesSzoveg);
         })
     } catch (err) {
         console.error("Failed to get response: ", message);

@@ -31,7 +31,7 @@ exports.handler = (event, context, callback) => {
                         return marks
                             .sort((a, b) => a.rnum_ - b.rnum_)
                             .map( mark => {
-                                const result = mark.ErtekelesSzoveg || mark.Osztalyzat_DNAME;
+                                mark.result = mark.ErtekelesSzoveg || mark.Osztalyzat_DNAME;
                                 const param = {
                                     TableName: 'Marks',
                                     Item: {
@@ -40,20 +40,17 @@ exports.handler = (event, context, callback) => {
                                         date: { S: mark.ErtekelesDatuma },
                                         subject_name: { S: subject.Nev },
                                         teacher_name: { S: mark.Ertekelo },
-                                        mark: { S: result },
+                                        mark: { S: mark.result },
                                     },
                                     ReturnValues: 'ALL_OLD',
                                 }
                                 db.putItem(param, (err, data) => {
                                     // The item did not exist before. It is new, notify Slack about it
                                     if (!err && (!data || !data.Attributes)) {
-                                        const message = 'Új jegy:  ``` ' +
-                                            `${mark.ErtekelesDatuma}: ${subject.Nev} - ${result}` +
-                                            '```'
-                                        sendMessage(webhook_url, message);
+                                        sendMessage(webhook_url, { mark, subject });
                                     }
                                 });
-                                return `${subject.ID}, ${mark.ErtekelesDatuma}, ${subject.Nev}, ${mark.Ertekelo}, ${result}`
+                                return `${subject.ID}, ${mark.ErtekelesDatuma}, ${subject.Nev}, ${mark.Ertekelo}, ${mark.result}`
                             })
                     })
             });
