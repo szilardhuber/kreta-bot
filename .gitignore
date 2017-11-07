@@ -63,3 +63,4 @@ config.json
 # AWS terraform
 *.zip
 *.tfstate*
+.terraform

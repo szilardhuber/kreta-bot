@@ -1,22 +1,12 @@
 const fs = require('fs');
 
-let creds = null;
-try {
-    creds = JSON.parse(fs.readFileSync("config.json"));
-} catch (err) {
-    console.log("You need a file named config.json containing userName and password");
-    console.log(`
-        {
-            "userName": "<your-username>",
-                "password": "<your-password>"
-        }
-        `);
-    process.exit(1);
-}
-
 const getMarks = require('./index.js').handler;
 
-getMarks({ queryStringParameters: creds}, null, (err, message) => {
+process.env.username = process.env.TF_VAR_username;
+process.env.password = process.env.TF_VAR_password;
+process.env.webhook_url = process.env.TF_VAR_slack_url;
+
+getMarks({}, null, (err, message) => {
     if (err) {
         console.error("Error while getting marks: ", err);
         return

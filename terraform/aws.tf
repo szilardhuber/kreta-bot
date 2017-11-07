@@ -6,14 +6,18 @@ variable "accountId" {
     default = "132805188284"
 }
 
+variable "username" {}
+variable "password" {}
+variable "slack_url" {}
+
 module "lambda" {
     source = "./lambda"
 
     region = "${var.region}"
     accountId = "${var.accountId}"
-    webhook_url = "cica"
-    username = "cica"
-    password = "cica"
+    webhook_url = "${var.slack_url}"
+    username = "${var.username}"
+    password = "${var.password}"
 }
 
 module "api_gateway" {

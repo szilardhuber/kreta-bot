@@ -11,17 +11,11 @@ AWS.config.update({
 var db = new AWS.DynamoDB();
 
 exports.handler = (event, context, callback) => {
-    let userName, password = null;
-    let webhook_url = "https://hooks.slack.com/services/"
-    try {
-        userName = event["queryStringParameters"]['userName'];
-        password = event["queryStringParameters"]['password'];
-        webhook_url = webhook_url + event["queryStringParameters"]['api_url'];
-    } catch (err) {
-        return callback(new Error("userName and password must be defined"), null);
-    }
-    if (!userName || !password) {
-        return callback(new Error("userName and password must be defined in event"), null);
+    const userName = process.env.username;
+    const password = process.env.password;
+    const webhook_url = `https://hooks.slack.com/services/${process.env.webhook_url}`
+    if (!userName || !password || !webhook_url) {
+        return callback(new Error("username, password and webhook_url must be in env"), null);
     }
     login(userName, password)
         .then( () => {
