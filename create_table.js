@@ -11,11 +11,11 @@ var params = {
     TableName : "Marks",
     KeySchema: [
         { AttributeName: "subject_id", KeyType: "HASH"},  //Partition key
-        { AttributeName: "rnum", KeyType: "RANGE" }  //Sort key
+        { AttributeName: "mark_id", KeyType: "RANGE" }  //Sort key
     ],
     AttributeDefinitions: [
         { AttributeName: "subject_id", AttributeType: "N" },
-        { AttributeName: "rnum", AttributeType: "N" },
+        { AttributeName: "mark_id", AttributeType: "N" },
     ],
     ProvisionedThroughput: {
         ReadCapacityUnits: 10,

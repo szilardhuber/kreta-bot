@@ -29,14 +29,14 @@ exports.handler = (event, context, callback) => {
                 return getMarksDetails(subject)
                     .then( (marks) => {
                         return marks
-                            .sort((a, b) => a.rnum_ - b.rnum_)
+                            .sort((a, b) => a.ID - b.ID)
                             .map( mark => {
                                 mark.result = mark.ErtekelesSzoveg || mark.Osztalyzat_DNAME;
                                 const param = {
                                     TableName: 'Marks',
                                     Item: {
                                         subject_id: { N: subject.ID.toString() },
-                                        rnum: { N: mark.rnum_.toString() },
+                                        mark_id: { N: mark.ID.toString() },
                                         date: { S: mark.ErtekelesDatuma },
                                         subject_name: { S: subject.Nev },
                                         teacher_name: { S: mark.Ertekelo },
@@ -48,6 +48,7 @@ exports.handler = (event, context, callback) => {
                                     // The item did not exist before. It is new, notify Slack about it
                                     if (!err && (!data || !data.Attributes)) {
                                         sendMessage(webhook_url, { mark, subject });
+                                        //console.log("Would be sending message: ", mark.ID, subject.ID, mark.ErtekelesDatuma, mark.result);
                                     }
                                 });
                                 return `${subject.ID}, ${mark.ErtekelesDatuma}, ${subject.Nev}, ${mark.Ertekelo}, ${mark.result}`
